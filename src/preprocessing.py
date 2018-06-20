@@ -389,9 +389,10 @@ if __name__ == "__main__":
     # data2vec(train_df, test_df)
     data2matrix(train_df, test_df)
     """
+    fill_train_test_matrix(30)
 
     # train_df = pd.read_csv("../data/output/train_vector_100.csv", sep="\t")  # (156060, 2)
     # X_train, X_val, y_train, y_val = gen_train_val_data(train_df)
 
     # gen_train_val_test_data()
-    gen_train_val_test_matrix()
+    # gen_train_val_test_matrix()
