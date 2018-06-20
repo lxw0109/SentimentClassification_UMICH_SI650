@@ -375,6 +375,7 @@ if __name__ == "__main__":
     rm_stopwords(train_df, test_df)
     """
 
+    """
     train_path = "../data/output/train_wo_sw.csv"
     test_path = "../data/output/test_wo_sw.csv"
     train_df, test_df = fetch_data_df(train_path=train_path, test_path=test_path, sep="\t", header=1)  # header不为None即可
@@ -387,9 +388,10 @@ if __name__ == "__main__":
 
     # data2vec(train_df, test_df)
     data2matrix(train_df, test_df)
+    """
 
     # train_df = pd.read_csv("../data/output/train_vector_100.csv", sep="\t")  # (156060, 2)
     # X_train, X_val, y_train, y_val = gen_train_val_data(train_df)
 
     # gen_train_val_test_data()
-    # gen_train_val_test_matrix()
+    gen_train_val_test_matrix()
