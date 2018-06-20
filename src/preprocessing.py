@@ -16,7 +16,7 @@ from keras.utils import np_utils
 from sklearn.model_selection import train_test_split
 
 
-def fetch_data_df(train_path, test_path, sep="\t"):
+def fetch_data_df(train_path, test_path, sep="\t", header=None):
     """
     :param train_path: path of train data.
     :param test_path:  path of test data.
@@ -25,9 +25,15 @@ def fetch_data_df(train_path, test_path, sep="\t"):
     """
     train_df, test_df = None, None
     if train_path:
-        train_df = pd.read_csv(train_path, sep=sep, header=None, names=["Sentiment", "Phrase"])  # shape: (6918, 2)
+        if header:
+            train_df = pd.read_csv(train_path, sep=sep)  # shape: (6918, 2)
+        else:
+            train_df = pd.read_csv(train_path, sep=sep, header=None, names=["Sentiment", "Phrase"])  # shape: (6918, 2)
     if test_path:
-        test_df = pd.read_csv(test_path, sep=sep, header=None, names=["Phrase"])  # shape: (28937, 1)
+        if header:
+            test_df = pd.read_csv(test_path, sep=sep)  # shape: (28937, 1)
+        else:
+            test_df = pd.read_csv(test_path, sep=sep, header=None, names=["Phrase"])  # shape: (28937, 1)
     # print(train_df.describe())
     # print(test_df.describe())
     return train_df, test_df
@@ -220,8 +226,9 @@ def data2matrix(train_df, test_df):
     empty_statistics_train = list(empty_statistics_train.items())
     empty_statistics_train = sorted(empty_statistics_train, key=lambda x: x[1], reverse=True)
     print(f"empty_statistics_train: {empty_statistics_train}")
-    most_senti = empty_statistics_train[0][0]
-    print(f"most_senti: {most_senti}")
+    if len(empty_statistics_train) > 0:
+        most_senti = empty_statistics_train[0][0]
+        print(f"most_senti: {most_senti}")
 
     phrase_series = test_df["Phrase"]  # <Series>. shape: (,)
     # f = open("../data/output/test_matrix_lower.csv", "wb")
@@ -370,7 +377,7 @@ if __name__ == "__main__":
 
     train_path = "../data/output/train_wo_sw.csv"
     test_path = "../data/output/test_wo_sw.csv"
-    train_df, test_df = fetch_data_df(train_path=train_path, test_path=test_path, sep="\t")
+    train_df, test_df = fetch_data_df(train_path=train_path, test_path=test_path, sep="\t", header=1)  # header不为None即可
     train_uniq_flag = False  # True. 只运行一次即可. 以后都设置为False
     if train_uniq_flag:
         print("Before drop_duplicates(), train_df.shape:", train_df.shape)
