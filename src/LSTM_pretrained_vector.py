@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
-# File: with_LSTM.py
+# File: LSTM_pretrained_vector.py
 # Author: lxw
 # Date: 6/6/18 5:26 PM
 
@@ -168,14 +168,16 @@ if __name__ == "__main__":
     np.random.seed(2)
     tf.set_random_seed(2)
 
+    """
     # X_train, X_val, X_test, X_test_id, y_train, y_val = gen_train_val_test_data()  # vector
     X_train, X_val, X_test, X_test_id, y_train, y_val = gen_train_val_test_matrix()  # matrix
     print("X_train.shape:{0}\nX_val.shape:{1}\nX_test.shape:{2}\nX_test_id.shape:{3}\n"
           "y_train.shape:{4}\ny_val.shape:{5}\n".format(X_train.shape, X_val.shape, X_test.shape,
                                                          X_test_id.shape, y_train.shape, y_val.shape))
 
-    model_train_val(X_train, X_val, y_train, y_val)
-    # plot_hist()
+    # model_train_val(X_train, X_val, y_train, y_val)
+    """
+    plot_hist()
 
     """
     model = load_model("../data/output/models/matrix_v5.0_best_model_19_0.88.hdf5")
