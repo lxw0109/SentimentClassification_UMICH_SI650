@@ -4,6 +4,7 @@
 # Author: lxw
 # Date: 6/20/18 09:03 AM
 
+import collections
 import json
 import numpy as np
 import pandas as pd
@@ -265,6 +266,7 @@ def fill_train_test_matrix(max_phrase_length):
     补齐"../data/output/train_matrix.csv"和"../data/output/test_matrix.csv"到最大短语长度(max_phrase_length)
     :return: 
     """
+    word_count = collections.Counter()
     # 1. 补齐 "../data/output/train_matrix_lower.csv" or "../data/output/train_matrix.csv"
     # f1 = open("../data/output/train_matrix_lower_pad.csv", "wb")
     f1 = open("../data/output/train_matrix_pad.csv", "wb")
@@ -275,15 +277,18 @@ def fill_train_test_matrix(max_phrase_length):
             line = line.strip()
             matrix, label = line.split("\t")
             matrix = json.loads(matrix)  # matrix: list of list
-            # print(f"type(matrix): {type(matrix)}, type(matrix[0]): {type(matrix[0])}")
-            # matrix  = np.array([json.loads(vec) for vec in matrix])
             length = len(matrix)
-            assert length <= max_phrase_length
-            # print(f"max_phrase_length: {max_phrase_length}, to be filled: {max_phrase_length-length}")
-            matrix = np.pad(matrix, pad_width=((0, max_phrase_length-length), (0, 0)), mode="constant",
-                            constant_values=-1)  # 参数中的matrix类型为list of list, 返回值的matrix是ndarray类型
-            f1.write(f"{json.dumps(matrix.tolist())}\t{label}\n".encode("utf-8"))
+            word_count[length] += 1
+            if length < max_phrase_length:
+                # 参数中的matrix类型为list of list, 返回值的matrix是ndarray of ndarray
+                matrix = np.pad(matrix, pad_width=((0, max_phrase_length-length), (0, 0)), mode="constant",
+                                constant_values=-1)
+                f1.write(f"{json.dumps(matrix.tolist())}\t{label}\n".encode("utf-8"))
+            else:
+                matrix = matrix[:max_phrase_length]  # list of list
+                f1.write(f"{json.dumps(matrix)}\t{label}\n".encode("utf-8"))
     f1.close()
+    print(word_count)
 
     # 2. 补齐 "../data/output/test_matrix_lower.csv" or "../data/output/test_matrix.csv"
     # f1 = open("../data/output/test_matrix_lower_pad.csv", "wb")
@@ -296,10 +301,15 @@ def fill_train_test_matrix(max_phrase_length):
             matrix = json.loads(matrix)  # matrix: list of list
             # matrix  = np.array([json.loads(vec) for vec in matrix])
             length = len(matrix)
-            assert length <= max_phrase_length
-            matrix = np.pad(matrix, pad_width=((0, max_phrase_length-length), (0, 0)), mode="constant",
-                            constant_values=-1)  # 参数中的matrix类型为list of list, 返回值的matrix是ndarray类型
-            f1.write(f"{json.dumps(matrix.tolist())}\n".encode("utf-8"))
+            word_count[length] += 1
+            if length < max_phrase_length:
+                # 参数中的matrix类型为list of list, 返回值的matrix是ndarray of ndarray
+                matrix = np.pad(matrix, pad_width=((0, max_phrase_length-length), (0, 0)), mode="constant",
+                                constant_values=-1)
+                f1.write(f"{json.dumps(matrix.tolist())}\n".encode("utf-8"))
+            else:
+                matrix = matrix[:max_phrase_length]  # list of list
+                f1.write(f"{json.dumps(matrix)}\t{label}\n".encode("utf-8"))
     f1.close()
 
 def gen_train_val_data(train_df):
