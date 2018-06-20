@@ -24,13 +24,22 @@ Kaggle竞赛题目"UMICH SI650 - Sentiment Classification" LSTM 实现
 | v2.7 | 99.2% | 3 | 8 | 与v2.0区别: batch_size: 8 |
 | v2.8 | 99.3% | 2 | 4 | 与v2.0区别: batch_size: 4 |
 | v2.9 | 99.2% | 1 | 2 | 与v2.0区别: batch_size: 2 |
-| v2.10 | 9.% |  | 1 | 与v2.0区别: batch_size: 1 |
+| v2.10 | 99.2% | 1 | 1 | 与v2.0区别: batch_size: 1 |
 
-v1.0-v1.7是在[lxw0109/SentimentAnalysisOnMovieReviews](https://github.com/lxw0109/SentimentAnalysisOnMovieReviews)项目所实现的LSTM方法的基础上完成的
+v1.0-v1.7是在[lxw0109/SentimentAnalysisOnMovieReviews](https://github.com/lxw0109/SentimentAnalysisOnMovieReviews)项目所实现的LSTM方法的基础上完成的  
+
+**根据上表格中的结果(v1.0-v1.7比较, v2.0-v2.10比较), 我们能够得到一个__不严格__的结论:**  
+当batch_size过大时，准确率会降低.  
+设置过大的batch_size，可能会对训练时网络的准确性产生负面影响，因为它降低了梯度下降的随机性。  
+要在可接受的训练时间内，确定最小的batch_size.  
+较小的batch_size能带来有更多起伏、更随机的权重更新.
 
 ## 2. 实现方法结果绘制
 1. v1.0 训练集和验证集上的loss和accuracy曲线如下图所示:  
 ![docs/images/ep38_bs512_v1.0.png](docs/images/ep38_bs512_v1.0.png)
 2. v2.0 训练集和验证集上的loss和accuracy曲线如下图所示:
-![docs/images/](docs/images/)
+![docs/images/[wo_pretrained]ep4_bs32.png](docs/images/[wo_pretrained]ep4_bs32.png)
+3. v2.5 训练集和验证集上的loss和accuracy曲线如下图所示:
+![docs/images/[wo_pretrained]ep21_bs1024.png](docs/images/[wo_pretrained]ep21_bs1024.png)
 
+v2.*其他的曲线与v2.0和v2.5基本都类似，这里省略

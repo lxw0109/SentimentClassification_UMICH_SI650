@@ -256,7 +256,8 @@ def data2matrix(train_df, test_df):
     f.close()
 
     print(f"max_phrase_length: {max_phrase_length}")
-    fill_train_test_matrix(max_phrase_length)
+    # fill_train_test_matrix(max_phrase_length)
+    fill_train_test_matrix(20)
 
 
 def fill_train_test_matrix(max_phrase_length):
@@ -288,7 +289,6 @@ def fill_train_test_matrix(max_phrase_length):
                 matrix = matrix[:max_phrase_length]  # list of list
                 f1.write(f"{json.dumps(matrix)}\t{label}\n".encode("utf-8"))
     f1.close()
-    print(word_count)
 
     # 2. 补齐 "../data/output/test_matrix_lower.csv" or "../data/output/test_matrix.csv"
     # f1 = open("../data/output/test_matrix_lower_pad.csv", "wb")
@@ -309,7 +309,9 @@ def fill_train_test_matrix(max_phrase_length):
                 f1.write(f"{json.dumps(matrix.tolist())}\n".encode("utf-8"))
             else:
                 matrix = matrix[:max_phrase_length]  # list of list
-                f1.write(f"{json.dumps(matrix)}\t{label}\n".encode("utf-8"))
+                f1.write(f"{json.dumps(matrix)}\n".encode("utf-8"))
+    word_count = sorted(list(word_count.items()), key=lambda x:x[1], reverse=True)
+    print(f"word_count: {word_count}")
     f1.close()
 
 def gen_train_val_data(train_df):
@@ -369,7 +371,7 @@ def gen_train_val_test_matrix():
     test_df = pd.read_csv("../data/output/test_matrix_pad.csv", sep="\t")  # (, 2)
     X_test = test_df["Phrase_vec"]  # <Series>.
     X_test = np.array([json.loads(mat) for mat in X_test])  # shape: (, 24, 300)
-    # X_test_id = np.array(X_test_id)   # Keep X_test_id in <Series>.
+
     end_time = time.time()
     print(f"Preparing data costs: {end_time - start_time:.2f}s\n")
     return X_train, X_val, X_test, y_train, y_val
@@ -395,14 +397,14 @@ if __name__ == "__main__":
         train_df.drop_duplicates(inplace=True)
         print("After drop_duplicates(), train_df.shape:", train_df.shape)
         train_df.to_csv("../data/output/train_wo_sw_uniq.csv", index=False, sep="\t")
+    """
 
     # data2vec(train_df, test_df)
-    data2matrix(train_df, test_df)
-    """
-    fill_train_test_matrix(30)
+    # data2matrix(train_df, test_df)
+    # fill_train_test_matrix(20)
 
     # train_df = pd.read_csv("../data/output/train_vector_100.csv", sep="\t")  # (156060, 2)
     # X_train, X_val, y_train, y_val = gen_train_val_data(train_df)
 
     # gen_train_val_test_data()
-    # gen_train_val_test_matrix()
+    gen_train_val_test_matrix()

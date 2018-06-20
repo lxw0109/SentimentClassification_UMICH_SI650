@@ -29,11 +29,11 @@ from keras.preprocessing import sequence
 from sklearn.model_selection import train_test_split
 
 
-BATCH_SIZE = 128  # 32
+BATCH_SIZE = 16
 # 把词汇表的大小设为一个定值，并且对于不在词汇表里的单词，把它们用UNK代替
-MAX_VOCAB_SIZE = 2000  # 2000 -> 2300: 效果没有明显提升
+MAX_VOCAB_SIZE = 2000  # 2000 -> 2300: 效果没有明显提升(v2.3: 99.2% -> 99.1%)
 # 根据句子的最大长度max_len，我们可以统一句子的长度，把短句用 0 填充
-MAX_SENTENCE_LENGTH = 50  # 40 -> 50: 效果没有明显提升
+MAX_SENTENCE_LENGTH = 40  # 40 -> 50: 效果没有明显提升(v2.3: 99.2% -> 99.1%)
 
 
 def preprocessing():
@@ -137,7 +137,7 @@ def model_evaluate(model, index2word, X_val, y_val):
     print("预测\t真实\t句子")
     for i in range(5):
         idx = np.random.randint(len(X_val))
-        x_test = X_val[idx].reshape(1, 40)
+        x_test = X_val[idx].reshape(1, MAX_SENTENCE_LENGTH)
         y_label = y_val[idx]
         ypred = model.predict(x_test)[0][0]
         sent = " ".join([index2word[x] for x in x_test[0] if x != 0])
@@ -176,14 +176,14 @@ if __name__ == "__main__":
 
     X_train, X_val, y_train, y_val = gen_train_val_data(sample_count, word2index, index2word)
 
+    """
     model = model_build(vocab_size)
 
     model_train(model, X_train, y_train, X_val, y_val)
+    """
 
-    model_path = "../data/output/models/best_model.hdf5"
+    model_path = "../data/output/models/best_model_01_0.02.hdf5"
     model = load_model(model_path)
 
     model_evaluate(model, index2word, X_val, y_val)
     model_testing(model, word2index)
-    """
-    """
