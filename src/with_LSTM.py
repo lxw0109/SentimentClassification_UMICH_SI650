@@ -72,7 +72,7 @@ def model_train_val(X_train, X_val, y_train, y_val):
         X_val = np.reshape(X_val, (X_val.shape[0], X_val.shape[1], 1))
     print("X_train.shape:{0}\nX_val.shape:{1}\n".format(X_train.shape, X_val.shape))
 
-    BATCH_SIZE = 512  # 32  # 64  # 128  # 256  # 512  # 1024
+    BATCH_SIZE = 256
     EPOCHS = 300
     model = model_build(input_shape=(X_train.shape[1], X_train.shape[2]))
 
@@ -115,32 +115,16 @@ def plot_hist():
     plt.show()
 
 
-def model_predict(model, X_test, X_test_id, X_val, y_val):
+def model_predict(model, X_test, X_val, y_val):
     # Generate predicted result.
-    print(len(X_test.shape))
-    if len(X_train.shape) == 2:  # 2: vector.  3: matrix.
+    print(f"len(X_test.shape):{len(X_test.shape)}")
+    if len(X_test.shape) == 2:  # 2: vector.  3: matrix.
         X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
         X_val = np.reshape(X_val, (X_val.shape[0], X_val.shape[1], 1))
     print("X_test.shape:{0}\nX_val.shape:{1}\n".format(X_test.shape, X_val.shape))
     predicted = model.predict(X_test)  # predicted.shape: (, )
     print(f"predicted.shape: {predicted.shape}")
-    """
-    # print(predicted[:10])  # OK
-    [[ 0.17622797  0.17507555  0.27694944  0.19135155  0.18039554]
-     ...
-     [ 0.17644432  0.17531542  0.27615064  0.19144376  0.18064587]
-     [ 0.17644432  0.17531542  0.27615064  0.19144376  0.18064587]
-     [ 0.17644432  0.17531544  0.27615064  0.19144376  0.18064587]]
-    """
-    # 把categorical数据转为numeric值，得到分类结果
-    predicted = np.argmax(predicted, axis=1)
-    """
-    np.savetxt("../data/output/lstm_submission.csv", np.c_[range(1, len(X_test) + 1), predicted], delimiter=",",
-               header="PhraseId,Sentiment", comments="", fmt="%d")
-    """
-    predicted = pd.Series(predicted, name="Sentiment")
-    submission = pd.concat([X_test_id, predicted], axis=1)
-    submission.to_csv("../data/output/submissions/lstm_submission_matrix.csv", index=False)
+    print(predicted[:10])
 
     # Model Evaluation
     print("model.metrics:{0}, model.metrics_names:{1}".format(model.metrics, model.metrics_names))
@@ -169,15 +153,14 @@ if __name__ == "__main__":
     tf.set_random_seed(2)
 
     # X_train, X_val, X_test, X_test_id, y_train, y_val = gen_train_val_test_data()  # vector
-    X_train, X_val, X_test, X_test_id, y_train, y_val = gen_train_val_test_matrix()  # matrix
-    print("X_train.shape:{0}\nX_val.shape:{1}\nX_test.shape:{2}\nX_test_id.shape:{3}\n"
-          "y_train.shape:{4}\ny_val.shape:{5}\n".format(X_train.shape, X_val.shape, X_test.shape,
-                                                         X_test_id.shape, y_train.shape, y_val.shape))
+    X_train, X_val, X_test, y_train, y_val = gen_train_val_test_matrix()  # matrix
+    print(f"X_train.shape:{X_train.shape}\nX_val.shape:{X_val.shape}\nX_test.shape:{X_test.shape}\ny_train.shape:{y_train.shape}\ny_val.shape:{y_val.shape}\n")
 
+    """
     model_train_val(X_train, X_val, y_train, y_val)
     # plot_hist()
 
     """
-    model = load_model("../data/output/models/matrix_v5.0_best_model_19_0.88.hdf5")
-    model_predict(model, X_test, X_test_id, X_val, y_val)
-    """
+    model_name = "v1.6_best_model_15_0.10.hdf5"
+    model = load_model(f"../data/output/models/{model_name}")
+    model_predict(model, X_test, X_val, y_val)
