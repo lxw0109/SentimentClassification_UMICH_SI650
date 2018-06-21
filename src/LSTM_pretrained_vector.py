@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
-# File: with_LSTM.py
+# File: LSTM_pretrained_vector.py
 # Author: lxw
 # Date: 6/6/18 5:26 PM
 
@@ -159,8 +159,8 @@ if __name__ == "__main__":
     """
     model_train_val(X_train, X_val, y_train, y_val)
     # plot_hist()
-
     """
+
     model_name = "v1.6_best_model_15_0.10.hdf5"
     model = load_model(f"../data/output/models/{model_name}")
     model_predict(model, X_test, X_val, y_val)
