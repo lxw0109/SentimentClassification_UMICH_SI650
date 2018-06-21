@@ -175,7 +175,7 @@ def data2vec(train_df, test_df):
     f.close()
 
 
-def data2matrix(train_df, test_df):
+def data2matrix(train_df, test_df, with_stopword=False):
     """
     matrix of phrase vector, 并将结果写入文件../data/output/train_matrix.csv, ../data/output/test_matrix.csv
     :param train_df: 
@@ -184,6 +184,7 @@ def data2matrix(train_df, test_df):
     """
     # 1. 加载模型
     start_time = time.time()
+    # NOTE: 下面的词向量模型中有停用词的词向量，但没有标点符号的词向量(所以可以尝试不去除停用词的训练效果)
     model = KeyedVectors.load_word2vec_format("../data/input/models/GoogleNews-vectors-negative300.bin", binary=True)
     # model = FastText("/home/lxw/IT/program/github/NLP-Experiments/fastText/data/lxw_model_cbow.bin")  # OK
     # model = KeyedVectors.load_word2vec_format("/home/lxw/IT/program/github/NLP-Experiments/word2vec/data/"
@@ -257,7 +258,7 @@ def data2matrix(train_df, test_df):
 
     print(f"max_phrase_length: {max_phrase_length}")
     # fill_train_test_matrix(max_phrase_length)
-    fill_train_test_matrix(20)
+    fill_train_test_matrix(20)  # TODO: 这里也改成40试试？
 
 
 def fill_train_test_matrix(max_phrase_length):
@@ -387,24 +388,24 @@ if __name__ == "__main__":
     rm_stopwords(train_df, test_df)
     """
 
-    """
-    train_path = "../data/output/train_wo_sw.csv"
-    test_path = "../data/output/test_wo_sw.csv"
-    train_df, test_df = fetch_data_df(train_path=train_path, test_path=test_path, sep="\t", header=1)  # header不为None即可
+    # train_path = "../data/output/train_wo_sw.csv"
+    # test_path = "../data/output/test_wo_sw.csv"
+    train_path = "../data/input/training.txt"
+    test_path = "../data/input/testdata.txt"
+    train_df, test_df = fetch_data_df(train_path=train_path, test_path=test_path, sep="\t")  # header: None(default).
     train_uniq_flag = False  # True. 只运行一次即可. 以后都设置为False
     if train_uniq_flag:
         print("Before drop_duplicates(), train_df.shape:", train_df.shape)
         train_df.drop_duplicates(inplace=True)
         print("After drop_duplicates(), train_df.shape:", train_df.shape)
         train_df.to_csv("../data/output/train_wo_sw_uniq.csv", index=False, sep="\t")
-    """
 
     # data2vec(train_df, test_df)
-    # data2matrix(train_df, test_df)
+    data2matrix(train_df, test_df)
     # fill_train_test_matrix(20)
 
     # train_df = pd.read_csv("../data/output/train_vector_100.csv", sep="\t")  # (156060, 2)
     # X_train, X_val, y_train, y_val = gen_train_val_data(train_df)
 
     # gen_train_val_test_data()
-    gen_train_val_test_matrix()
+    # gen_train_val_test_matrix()
