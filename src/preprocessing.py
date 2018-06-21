@@ -258,7 +258,7 @@ def data2matrix(train_df, test_df, with_stopword=False):
 
     print(f"max_phrase_length: {max_phrase_length}")
     # fill_train_test_matrix(max_phrase_length)
-    fill_train_test_matrix(20)  # TODO: 这里也改成40试试？
+    fill_train_test_matrix(40)  # DEBUG: 这里也改成40试试.
 
 
 def fill_train_test_matrix(max_phrase_length):

@@ -72,7 +72,7 @@ def model_train_val(X_train, X_val, y_train, y_val):
         X_val = np.reshape(X_val, (X_val.shape[0], X_val.shape[1], 1))
     print("X_train.shape:{0}\nX_val.shape:{1}\n".format(X_train.shape, X_val.shape))
 
-    BATCH_SIZE = 256
+    BATCH_SIZE = 16
     EPOCHS = 300
     model = model_build(input_shape=(X_train.shape[1], X_train.shape[2]))
 
@@ -161,6 +161,6 @@ if __name__ == "__main__":
     # plot_hist()
     """
 
-    model_name = "v1.6_best_model_15_0.10.hdf5"
+    model_name = "best_model_05_0.05.hdf5"
     model = load_model(f"../data/output/models/{model_name}")
     model_predict(model, X_test, X_val, y_val)
