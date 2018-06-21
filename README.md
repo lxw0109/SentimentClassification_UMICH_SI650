@@ -9,6 +9,8 @@ Kaggle竞赛题目"UMICH SI650 - Sentiment Classification" LSTM 实现
 | v1.0 | 96.35% | 38 | 512 | 1. 采用预训练的词向量模型生成的词向量([GoogleNews-vectors-negative300.bin](https://github.com/3Top/word2vec-api))矩阵表示句子 2. 去除了停用词 |
 | v1.1 | 96.57% | 4 | 8 | 与v1.0区别: batch_size: 8 |
 | v1.2 | 96.70% | 5 | 16 | 与v1.0区别: batch_size: 16 |
+| v1.2.1 | 98.44% | 5 | 16 | 与v1.2区别: **没有**去除停用词 |
+| v1.2.2 | 98.61% | 5 | 16 | 与v1.2区别: 1.**没有**去除停用词 2.最大句子长度由20改成40(与V2.*系列是40, 便于对比) |
 | v1.3 | 96.22% | 7 | 32 | 与v1.0区别: batch_size: 32 |
 | v1.4 | 96.44% | 12 | 64 | 与v1.0区别: batch_size: 64 |
 | v1.5 | 96.48% | 14 | 128 | 与v1.0区别: batch_size: 128 |
@@ -35,11 +37,17 @@ v1.0-v1.7是在[lxw0109/SentimentAnalysisOnMovieReviews](https://github.com/lxw0
  较小的batch_size能带来有更多起伏、更随机的权重更新  
 
 ## 2. 实现方法结果绘制
-1. v1.0 训练集和验证集上的loss和accuracy曲线如下图所示:  
+1. v1.0: 训练集和验证集上的loss和accuracy曲线如下图所示:  
 ![docs/images/ep38_bs512_v1.0.png](docs/images/ep38_bs512_v1.0.png)
-2. v2.0 训练集和验证集上的loss和accuracy曲线如下图所示:
+2. v1.2.1: 与v1.2区别 **没有**去除停用词, 训练集和验证集上的loss和accuracy曲线如下图所示:  
+![docs/images/ep5_bs16_v1.2.1.png](docs/images/ep5_bs16_v1.2.1.png)
+3. v1.2.2: 与v1.2区别 **没有**去除停用词且最大句子长度由20改成40(与V2.*系列是40, 便于对比), 训练集和验证集上的loss和accuracy曲线如下图所示:  
+![docs/images/ep5_bs16_v1.2.2.png](docs/images/ep5_bs16_v1.2.2.png)  
+通过对比v1.2, v1.2.1, v1.2.2的结果，我们可以得出:  
++ 数据预处理操作对于模型的准确率有比较大的影响: 例如这里体现出来的是否去除停用词(或停用词的粒度问题:只去标点 or 去除标点和停用词)
+4. v2.0: 训练集和验证集上的loss和accuracy曲线如下图所示:
 ![docs/images/[wo_pretrained]ep4_bs32.png](docs/images/[wo_pretrained]ep4_bs32.png)
-3. v2.5 训练集和验证集上的loss和accuracy曲线如下图所示:
+5. v2.5: 训练集和验证集上的loss和accuracy曲线如下图所示:
 ![docs/images/[wo_pretrained]ep21_bs1024.png](docs/images/[wo_pretrained]ep21_bs1024.png)
 
 v2.*其他的曲线与v2.0和v2.5基本都类似，这里省略
