@@ -84,8 +84,8 @@ def gen_train_val_data(sample_count, word2index, index2word):
             y[idx] = int(label)
             idx += 1
 
-    X = sequence.pad_sequences(X, maxlen=MAX_SENTENCE_LENGTH, value=0)  # default: 从前面补0, 从前面截取(v2.3: 99.2%)
-    # 从后面补0, 从后面截取. NOTE: 改成从后面补零和截取后，结果变差了一点.(v2.3: 99.0%)
+    X = sequence.pad_sequences(X, maxlen=MAX_SENTENCE_LENGTH, value=0)  # default: 从前面补0, 从前面删除(v2.3: 99.2%)
+    # 从后面补0, 从后面删除. NOTE: 改成从后面补零和截取后，结果变差了一点.(v2.3: 99.0%)
     # X = sequence.pad_sequences(X, maxlen=MAX_SENTENCE_LENGTH, value=0, padding="post", truncating="post")
     # 感觉shuffle=True必须的吧？训练样本中前面的label全是1后面的label全是0. shuffle=False好像对结果的准确率没有什么影响
     return train_test_split(X, y, test_size=0.333, random_state=1, shuffle=True)
