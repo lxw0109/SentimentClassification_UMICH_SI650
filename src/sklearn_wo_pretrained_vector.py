@@ -1,32 +1,20 @@
 #!/usr/bin/env python3
 # coding: utf-8
-# File: LSTM_wo_pretrained_vector.py
+# File: sklearn_wo_pretrained_vector.py
 # Author: lxw
-# Date: 6/20/18 10:07 AM
-"""
-References:
-[利用 Keras下的 LSTM 进行情感分析](https://blog.csdn.net/william_2015/article/details/72978387)
-
-说明:
-1. 不使用预训练的词向量模型, 在代码中直接构建词向量
-2. 没有去停用词
-"""
+# Date: 6/21/18 11:32 AM
 
 import collections
 import matplotlib.pyplot as plt
 import nltk
 import numpy as np
-import tensorflow as tf
+import pandas as pd
 
-from keras.callbacks import ModelCheckpoint
-from keras.callbacks import EarlyStopping
-from keras.callbacks import ReduceLROnPlateau
-from keras.layers.core import Dense
-from keras.layers.embeddings import Embedding
-from keras.layers.recurrent import LSTM
-from keras.models import Sequential
-from keras.models import load_model
 from keras.preprocessing import sequence
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import train_test_split
 
 
@@ -84,54 +72,14 @@ def gen_train_val_data(sample_count, word2index, index2word):
             y[idx] = int(label)
             idx += 1
 
-    X = sequence.pad_sequences(X, maxlen=MAX_SENTENCE_LENGTH, value=0)  # default: 从前面补0, 从前面截取(v2.3: 99.2%)
-    # 从后面补0, 从后面截取. NOTE: 改成从后面补零和截取后，结果变差了一点.(v2.3: 99.0%)
-    # X = sequence.pad_sequences(X, maxlen=MAX_SENTENCE_LENGTH, value=0, padding="post", truncating="post")
-    # 感觉shuffle=True必须的吧？训练样本中前面的label全是1后面的label全是0. shuffle=False好像对结果的准确率没有什么影响
+    X = sequence.pad_sequences(X, maxlen=MAX_SENTENCE_LENGTH, value=0)  # default: 从前面补0, 从前面截取
+    print(f"X.shape: {X.shape}")  # X.shape: (7086, 40)
+    # "shuffle=True" is essential for RF.
+    # return train_test_split(X, y, test_size=0.333, random_state=1, shuffle=False)
     return train_test_split(X, y, test_size=0.333, random_state=1, shuffle=True)
 
 
-def model_build(vocab_size):
-    model = Sequential()
-    # model.add(Embedding(input_dim=vocab_size, output_dim=128, input_length=MAX_SENTENCE_LENGTH, mask_zero=True,
-    #                     name="embedding"))  # NOTE: mask_zero=True后，准确率降低了(v2.3: 99.2% -> 98.9%)
-    model.add(Embedding(input_dim=vocab_size, output_dim=128, input_length=MAX_SENTENCE_LENGTH, mask_zero=False,
-                        name="embedding"))
-    """
-    model.add(Embedding(input_dim=vocab_size, output_dim=128, input_length=MAX_SENTENCE_LENGTH))
-    # the model will take as input an integer **matrix** of size (batch, input_length).
-    # the largest integer(i.e. word index) in the input should be no larger than vocab_size (vocabulary size).
-    # now model.output_shape == (None, input_length, output_dim), where None is the batch dimension.
-    """
-    model.add(LSTM(units=64, dropout=0.2, recurrent_dropout=0.2, name="lstm"))
-    model.add(Dense(units=1, activation="sigmoid", name="dense"))  # OK.
-    # model.add(Dense(units=1, activation="softmax", name="dense"))  # OK. 效果变得非常差(v2.3: 99.2% -> 55.5%)
-    model.compile(loss="binary_crossentropy", optimizer="adam",metrics=["accuracy"])
-    return model
-
-
-def model_train(model, X_train, y_train, X_val, y_val):
-    NUM_EPOCHS = 100
-    early_stopping = EarlyStopping(monitor="val_loss", patience=10)
-    lr_reduction = ReduceLROnPlateau(monitor="val_loss", patience=5, verbose=1, factor=0.2, min_lr=1e-5)
-    model_path = "../data/output/models/best_model.hdf5"  # 保存到1个模型文件(因为文件名相同)
-    # model_path = "../data/output/models/best_model_{epoch:02d}_{val_loss:.2f}.hdf5"  # 保存到多个模型文件
-    checkpoint = ModelCheckpoint(filepath=model_path, monitor="val_loss", verbose=1, save_best_only=True, mode="min")
-    hist_obj = model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=NUM_EPOCHS, verbose=1,
-                         validation_data=(X_val, y_val), callbacks=[early_stopping, lr_reduction, checkpoint])
-
-    # 绘制训练集和验证集的曲线
-    plt.plot(hist_obj.history["acc"], label="Training Accuracy", color="green", linewidth=2)
-    plt.plot(hist_obj.history["loss"], label="Training Loss", color="red", linewidth=1)
-    plt.plot(hist_obj.history["val_acc"], label="Validation Accuracy", color="purple", linewidth=2)
-    plt.plot(hist_obj.history["val_loss"], label="Validation Loss", color="blue", linewidth=1)
-    plt.grid(True)  # 设置网格形式
-    plt.xlabel("epoch")
-    plt.ylabel("acc-loss")  # 给x, y轴加注释
-    plt.legend(loc="upper right")  # 设置图例显示位置
-    plt.show()
-
-
+# TODO: 1
 def model_evaluate(model, index2word, X_val, y_val):
     score, acc = model.evaluate(X_val, y_val, batch_size=BATCH_SIZE)  # model.metrics: ["accuracy"]
     print(f"\nValidation score: {score:.3f}, accuracy: {acc:.3f}")
@@ -145,6 +93,7 @@ def model_evaluate(model, index2word, X_val, y_val):
         print(f"{int(round(ypred))}\t{int(y_label)}\t{sent}")
 
 
+# TODO: 2
 def model_testing(model, word2index):
     input_sentences = ["I love reading.", "You are so boring.", "The orange doesn't taste very sweet.", "What a game."]
     X_test = np.empty(len(input_sentences), dtype=list)
@@ -168,23 +117,84 @@ def model_testing(model, word2index):
         print(f"{label2word[labels[i]]}\t{input_sentences[i]}")
 
 
+def train_val_predict(X_train, X_val, y_train, y_val):
+    '''
+    # 1. [NO]LR: LR算法的优点是可以给出数据所在类别的概率
+    model = linear_model.LogisticRegression(C=1e5)
+    """
+    C: default: 1.0
+    Inverse of regularization strength; must be a positive float. Like in support vector machines,
+    smaller values specify stronger regularization.
+    """
+    # 2. [NO]NB: 也是著名的机器学习算法, 该方法的任务是还原训练样本数据的分布密度, 其在多分类中有很好的效果
+    from sklearn import naive_bayes
+    model = naive_bayes.GaussianNB()  # 高斯贝叶斯
+    # 3. [OK]KNN:
+    from sklearn.neighbors import KNeighborsClassifier
+    model = KNeighborsClassifier()  # 非常慢，感觉没法用(跑了半个多小时没反应)
+    # 4. [OK]决策树: 分类与回归树(Classification and Regression Trees, CART)算法常用于特征含有类别信息
+    # 的分类或者回归问题，这种方法非常适用于多分类情况
+    from sklearn.tree import DecisionTreeClassifier
+    model = DecisionTreeClassifier()
+    # 5. [NO]SVM: SVM是非常流行的机器学习算法，主要用于分类问题，
+    # 如同逻辑回归问题，它可以使用一对多的方法进行多类别的分类
+    from sklearn.svm import SVC
+    model = SVC()
+
+    # 6. [OK]MLP: 多层感知器(神经网络)
+    from sklearn.neural_network import MLPClassifier
+    # model = MLPClassifier(activation="relu", solver="adam", alpha=0.0001)
+    # model = MLPClassifier(activation="identity", solver="adam", alpha=0.0001)
+    # model = MLPClassifier(activation="logistic", solver="adam", alpha=0.0001)
+    model = MLPClassifier(activation="tanh", solver="adam", alpha=0.0001)
+    '''
+
+    # 7. RF: 随机森林
+    from sklearn.ensemble import RandomForestClassifier
+    # n_jobs: If -1, the number of jobs is set to the number of cores.
+    model = RandomForestClassifier(n_estimators=100, min_samples_leaf=10, n_jobs=-1, random_state=0)
+
+    model.fit(X_train, y_train)
+    y_val_pred = model.predict(X_val)
+    # print(f"\nmodel.feature_importances_: {model.feature_importances_}\n")
+
+    print(f"classification_report:\n{classification_report(y_val, y_val_pred)}")  # y_true, y_pred
+    print(f"confusion_matrix:\n{confusion_matrix(y_val, y_val_pred, labels=range(2))}")
+    print("Mean accuracy score:", accuracy_score(y_val, y_val_pred))
+    # cv = StratifiedKFold(n_splits=5, shuffle=True)
+    scores = cross_val_score(model, X_train, y_train, cv=5)
+    print(f"Accuracy: {scores.mean():.2f}(+/-{scores.std() * 2:.2f})")
+    print("model.score:", model.score(X_val, y_val))
+
+    """
+    predicted = model.predict(X_test)
+    # print(predicted)
+    # 把categorical数据转为numeric值，得到分类结果
+    predicted = np.argmax(predicted, axis=1)
+    predicted = pd.Series(predicted, name="Sentiment")
+    submission = pd.concat([X_test_id, predicted], axis=1)
+    # submission.to_csv("../data/output/submissions/sk_knn_submission.csv", index=False)
+    submission.to_csv("../data/output/submissions/sk_rf_submission_matrix.csv", index=False)
+    """
+
+
 if __name__ == "__main__":
     # For reproducibility
     np.random.seed(2)
-    tf.set_random_seed(2)
 
     sample_count, vocab_size, word2index, index2word = preprocessing()
 
     X_train, X_val, y_train, y_val = gen_train_val_data(sample_count, word2index, index2word)
 
+    print(f"\nX_train.shape:{X_train.shape}\nX_val.shape:{X_val.shape}\n"
+          f"y_train.shape:{y_train.shape}\ny_val.shape:{y_val.shape}\n")
+    # X_train.shape: (4726, 40). X_val.shape: (2360, 40). y_train.shape: (4726,). y_val.shape: (2360,)
+
+    train_val_predict(X_train, X_val, y_train, y_val)
+
+    # TODO
     """
-    model = model_build(vocab_size)
-
-    model_train(model, X_train, y_train, X_val, y_val)
-    """
-
-    model_path = "../data/output/models/best_model_01_0.02.hdf5"
-    model = load_model(model_path)
-
+    model = None
     model_evaluate(model, index2word, X_val, y_val)
     model_testing(model, word2index)
+    """
